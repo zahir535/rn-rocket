@@ -1,8 +1,12 @@
 import { View, Text, ViewStyle } from "react-native";
-import React from "react";
-import { flexChild, centerHV, absolutePosition } from "src/styles";
+import React, { Fragment, FunctionComponent } from "react";
+import { flexChild, centerHV, absolutePosition } from "../styles";
 
-export const LoadingModal = () => {
+interface LoadingModalProps {
+  isLoading: boolean;
+}
+
+export const LoadingModal: FunctionComponent<LoadingModalProps> = ({ isLoading }) => {
   const loadingPageStyle: ViewStyle = {
     ...flexChild,
     ...centerHV,
@@ -14,8 +18,12 @@ export const LoadingModal = () => {
   };
 
   return (
-    <View style={loadingPageStyle}>
-      <Text>Loading ...</Text>
-    </View>
+    <Fragment>
+      {isLoading && (
+        <View style={loadingPageStyle}>
+          <Text>Loading ...</Text>
+        </View>
+      )}
+    </Fragment>
   );
 };

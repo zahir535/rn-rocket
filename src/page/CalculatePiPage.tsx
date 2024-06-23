@@ -1,9 +1,10 @@
 import { View, Text, ViewStyle, TextInput, Pressable, TextStyle } from "react-native";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useContext, useState } from "react";
 import { centerHV, flexChild } from "../styles";
-import { Loading, Tag } from "../component";
+import { Tag } from "../component";
 import { calculatePi } from "../network";
 import { useMutation } from "@tanstack/react-query";
+import { GeneralContext } from "../context";
 
 export const CalculatePiPage = () => {
   const [methodLists] = useState<piMethods[]>(["gregory", "limit"]);
@@ -11,7 +12,7 @@ export const CalculatePiPage = () => {
   const [iteration, setIteration] = useState<string>("");
   const [bigNumber, setBigNumber] = useState<string>("");
   const [isPressed, setIsPressed] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { contextState, handleContextState } = useContext(GeneralContext);
 
   const isGregory = selectedMethod === "gregory";
   const textInputValue = isGregory ? iteration : bigNumber;
@@ -28,11 +29,10 @@ export const CalculatePiPage = () => {
   const mutation = useMutation({
     mutationFn: calculatePi,
     onMutate: () => {
-      setIsLoading(true);
+      handleContextState({ ...contextState, isLoading: true });
     },
-    onSettled: (res) => {
-      console.log(">>>> res", JSON.stringify(res));
-      setIsLoading(false);
+    onSettled: () => {
+      handleContextState({ ...contextState, isLoading: false });
       setIteration("");
       setBigNumber("");
     },
@@ -101,8 +101,6 @@ export const CalculatePiPage = () => {
           <Text style={buttonTextStyle}>Calculate Pi</Text>
         </Pressable>
       </Fragment>
-
-      {isLoading ? <Loading /> : null}
     </View>
   );
 };

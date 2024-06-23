@@ -1,42 +1,45 @@
 import { View, Text, Pressable, ViewStyle, TextStyle, TextInput } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { centerHV, flexChild } from "../styles";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { getPiData } from "../network";
 import { BasicModal } from "../modal";
+import { GeneralContext } from "../context";
 
 export const BasePage = () => {
   const navigation = useNavigation();
   const [diameter, setDiameter] = useState("");
   const [circumference, setCircumference] = useState("");
   const [showModal, setShowModal] = useState<boolean>(false);
+  const { contextState, handleContextState } = useContext(GeneralContext);
 
   const { isPending, isError, data, error, refetch } = useQuery({ queryKey: ["piValues"], queryFn: getPiData });
-
-  console.log(">>> data", data);
 
   const handleCalculatePi = () => {
     navigation.navigate("CalculatePiScreen");
   };
 
   const handleCalculateCircumference = () => {
-    const diameterNumber = Number(diameter);
-    const diameterNumberValue = typeof diameterNumber === "number" ? diameterNumber : 0;
+    const diameterNumber = Number(diameter); // todo - if type in char, it becomes NaN, but type is still number
+    const diameterNumberValue = typeof diameterNumber === "number" && diameterNumber >= 0 ? diameterNumber : 0;
 
     const calculatedValue = diameterNumberValue * data.data;
-    setCircumference(calculatedValue.toString());
+    const roundedCircumference = Math.round(calculatedValue * 100) / 100;
+    setCircumference(roundedCircumference.toString());
 
-    return calculatedValue.toString();
+    return roundedCircumference.toString();
   };
 
   const onCalculateCircumference = async () => {
+    handleContextState({ ...contextState, isLoading: true });
     const res = await handleCalculateCircumference();
 
     if (typeof res === "string" && res !== "") {
       setDiameter("");
       setShowModal(true);
     }
+    handleContextState({ ...contextState, isLoading: false });
   };
 
   const buttonStyle: ViewStyle = {
@@ -137,7 +140,7 @@ export const BasePage = () => {
         isShowModal={showModal}
         onCLose={() => setShowModal(false)}
         title={"Circumference of the sun is:"}
-        subtitle={circumference}
+        subtitle={`${circumference} KM`}
       />
     </View>
   );
