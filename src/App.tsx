@@ -6,6 +6,7 @@ import { flexChild } from "./styles";
 import { NavigationContainer } from "@react-navigation/native";
 import { RootNavigator } from "./navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GeneralContextProvider } from "./context";
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === "dark";
@@ -17,14 +18,16 @@ function App(): JSX.Element {
   const queryClient = new QueryClient();
 
   return (
-    <NavigationContainer>
-      <QueryClientProvider client={queryClient}>
-        <SafeAreaView style={flexChild}>
-          <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={backgroundStyle.backgroundColor} />
-          <RootNavigator />
-        </SafeAreaView>
-      </QueryClientProvider>
-    </NavigationContainer>
+    <GeneralContextProvider>
+      <NavigationContainer>
+        <QueryClientProvider client={queryClient}>
+          <SafeAreaView style={flexChild}>
+            <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={backgroundStyle.backgroundColor} />
+            <RootNavigator />
+          </SafeAreaView>
+        </QueryClientProvider>
+      </NavigationContainer>
+    </GeneralContextProvider>
   );
 }
 
