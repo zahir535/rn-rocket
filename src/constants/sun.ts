@@ -1,0 +1,1 @@
+export const DIAMETER_OF_SUN = 1.3927 * 1000000;
