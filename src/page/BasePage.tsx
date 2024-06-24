@@ -1,18 +1,15 @@
-import { View, Text, Pressable, ViewStyle, TextStyle, TextInput } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+/* eslint-disable react-native/no-inline-styles */
+import { View, Text, Pressable, ViewStyle, TextStyle } from "react-native";
+import React, { useEffect } from "react";
 import { centerHV, flexChild } from "../styles";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { getPiData } from "../network";
-import { BasicModal } from "../modal";
-import { GeneralContext } from "../context";
+import { DIAMETER_OF_SUN } from "../constants";
+import Icon from "react-native-vector-icons/AntDesign";
 
 export const BasePage = () => {
   const navigation = useNavigation();
-  const [diameter, setDiameter] = useState("");
-  const [circumference, setCircumference] = useState("");
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const { contextState, handleContextState } = useContext(GeneralContext);
 
   const { isPending, isError, data, error, refetch } = useQuery({ queryKey: ["piValues"], queryFn: getPiData });
 
@@ -20,27 +17,7 @@ export const BasePage = () => {
     navigation.navigate("CalculatePiScreen");
   };
 
-  const handleCalculateCircumference = () => {
-    const diameterNumber = Number(diameter); // todo - if type in char, it becomes NaN, but type is still number
-    const diameterNumberValue = typeof diameterNumber === "number" && diameterNumber >= 0 ? diameterNumber : 0;
-
-    const calculatedValue = diameterNumberValue * data.data;
-    const roundedCircumference = Math.round(calculatedValue * 100) / 100;
-    setCircumference(roundedCircumference.toString());
-
-    return roundedCircumference.toString();
-  };
-
-  const onCalculateCircumference = async () => {
-    handleContextState({ ...contextState, isLoading: true });
-    const res = await handleCalculateCircumference();
-
-    if (typeof res === "string" && res !== "") {
-      setDiameter("");
-      setShowModal(true);
-    }
-    handleContextState({ ...contextState, isLoading: false });
-  };
+  console.log(">>> data", JSON.stringify(data));
 
   const buttonStyle: ViewStyle = {
     ...centerHV,
@@ -63,20 +40,12 @@ export const BasePage = () => {
     fontWeight: "600",
   };
 
-  const inputStyle: ViewStyle = {
-    borderWidth: 1,
-    borderColor: "black",
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-    marginBottom: 12,
-    width: "80%",
-    marginTop: 8,
-  };
-
   const firstSectionStyle: ViewStyle = {
+    marginTop: 24,
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
+    width: "80%",
   };
 
   useEffect(() => {
@@ -106,42 +75,31 @@ export const BasePage = () => {
     );
   }
 
+  const isValidData = data !== undefined && data.data !== undefined;
+  const piValue = isValidData ? Math.round(data.data * 1000000) / 1000000 : 0;
+  const circumferenceValue = isValidData ? Math.round(DIAMETER_OF_SUN * data.data * 1000000) / 1000000 : 0;
+
   return (
     <View style={pageStyle}>
-      <View style={firstSectionStyle}>
+      <View style={{ ...firstSectionStyle, flexDirection: "row", justifyContent: "space-between" }}>
         <Text>
-          Nearest PI Value: <Text style={piTextStyle}>{data.data}</Text>
+          Nearest PI Value: <Text style={piTextStyle}>{piValue || 0}</Text>
         </Text>
-        <Text onPress={() => refetch()} style={{ fontSize: 12, marginTop: 12 }}>
-          Refresh
-        </Text>
+        <View style={{ marginLeft: 8 }}>
+          <Icon name="sync" size={24} color="#900" onPress={() => refetch()} />
+        </View>
       </View>
 
-      <Text>Calculate Sun's circumference:</Text>
-
-      <TextInput
-        keyboardType={"decimal-pad"}
-        onChangeText={setDiameter}
-        placeholder={"sun's diameter (km)"}
-        style={inputStyle}
-        value={diameter}
-      />
-      <Pressable
-        onPress={onCalculateCircumference}
-        style={{ ...buttonStyle, backgroundColor: "transparent", borderWidth: 1, borderRadius: 8 }}>
-        <Text>Calculate Circumference</Text>
-      </Pressable>
+      {isValidData && data.data > 0 && (
+        <View style={firstSectionStyle}>
+          <Text style={{ marginBottom: 12 }}>Circumference of the sun:</Text>
+          <Text style={piTextStyle}>{circumferenceValue} KM</Text>
+        </View>
+      )}
 
       <Pressable onPress={handleCalculatePi} style={{ ...buttonStyle, marginTop: 42 }}>
         <Text>Go To Calculate Pi Page</Text>
       </Pressable>
-
-      <BasicModal
-        isShowModal={showModal}
-        onCLose={() => setShowModal(false)}
-        title={"Circumference of the sun is:"}
-        subtitle={`${circumference} KM`}
-      />
     </View>
   );
 };
