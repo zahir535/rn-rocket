@@ -76,8 +76,8 @@ export const BasePage = () => {
   }
 
   const isValidData = data !== undefined && data.data !== undefined;
-  const piValue = isValidData ? Math.round(data.data * 1000000) / 1000000 : 0;
-  const circumferenceValue = isValidData ? Math.round(DIAMETER_OF_SUN * data.data * 1000000) / 1000000 : 0;
+  const piValue = isValidData ? data.data : 0;
+  const circumferenceValue = isValidData ? DIAMETER_OF_SUN * data.data : 0;
 
   return (
     <View style={pageStyle}>
@@ -85,9 +85,7 @@ export const BasePage = () => {
         <Text>
           Nearest PI Value: <Text style={piTextStyle}>{piValue || 0}</Text>
         </Text>
-        <View style={{ marginLeft: 8 }}>
-          <Icon name="sync" size={24} color="#900" onPress={() => refetch()} />
-        </View>
+        <View style={{ marginLeft: 8 }}>{/* <Icon name="sync" size={24} color="#900" onPress={() => refetch()} /> */}</View>
       </View>
 
       {isValidData && data.data > 0 && (
